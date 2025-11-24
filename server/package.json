@@ -1,0 +1,19 @@
+{
+	"name": "realtime-ui-matcher-server",
+	"version": "0.1.0",
+	"main": "src/index.js",
+	"type": "module",
+	"scripts": {
+		"dev": "node src/index.js",
+		"build": "echo \"no build step yet\"",
+		"start": "NODE_ENV=production node src/index.js"
+	},
+	"dependencies": {
+		"cors": "^2.8.5",
+		"express": "^4.19.2",
+		"multer": "^1.4.5-lts.1",
+		"pixelmatch": "^5.3.0",
+		"pngjs": "^7.0.0",
+		"puppeteer": "^23.0.0"
+	}
+}

@@ -1,0 +1,16 @@
+# Global ignores
+node_modules/
+dist/
+build/
+.env
+.env.local
+*.log
+
+# Ignore node_modules in subfolders
+client/node_modules/
+client/dist/
+
+server/node_modules/
+server/dist/
+
+.turbo/
