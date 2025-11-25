@@ -343,18 +343,32 @@ export default function ComparisonView({
 
 			<section className="card card-hint">
 				<h2>How to use</h2>
-				<p>
-					Design vs URL. export your design as PNG, set the same viewport width
-					and enter the page URL.
+				<p className="card-subtitle">
+					Pick the mode that matches what you have and follow the steps below.
 				</p>
-				<p>
-					Image vs Image. export the design as PNG, take a PNG screenshot of the
-					implementation in the same viewport and compare the two files
-					directly.
-				</p>
-				<p>
-					URL vs URL. paste a public design URL such as a Figma prototype and
-					the implementation URL, set the viewport width and run the comparison.
+
+				<ul className="howto-list">
+					<li>
+						<strong>Design vs URL.</strong> You have a static design image and a
+						live page. Export the design as PNG at the target viewport, upload
+						it as the design file, then enter the implementation URL.
+					</li>
+					<li>
+						<strong>Image vs Image.</strong> You have two PNGs with the same
+						dimensions. One from Figma or your design tool, one full-page
+						screenshot from the browser. Upload both and compare them directly.
+					</li>
+					<li>
+						<strong>URL vs URL.</strong> You have two pages that can be opened
+						in a browser. For example Figma prototype URL and staging URL, or
+						two envs of the same app. Paste both URLs, set viewport width and
+						run comparison.
+					</li>
+				</ul>
+
+				<p className="howto-tip">
+					Tip. For reliable results, always keep the same viewport width and
+					avoid animated content while capturing screenshots.
 				</p>
 			</section>
 		</div>
