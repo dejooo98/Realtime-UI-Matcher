@@ -1444,145 +1444,6 @@ button {
 	border-color: #fecaca;
 }
 
-/* Per section breakdown */
-
-.section-card {
-	border-radius: 12px;
-	padding: 12px 14px 14px;
-	background: #f9fafb;
-	border: 1px solid #e5e7eb;
-	display: flex;
-	flex-direction: column;
-	gap: 10px;
-}
-
-.theme-dark .section-card {
-	background: rgba(15, 23, 42, 0.95);
-	border-color: rgba(55, 65, 81, 0.9);
-}
-
-.section-header {
-	display: flex;
-	justify-content: space-between;
-	align-items: flex-start;
-	gap: 12px;
-	flex-wrap: wrap;
-}
-
-.section-header h2 {
-	margin: 0 0 4px;
-	font-size: 14px;
-	font-weight: 600;
-}
-
-.section-subtitle {
-	margin: 0;
-	font-size: 12px;
-	color: #6b7280;
-}
-
-.theme-dark .section-subtitle {
-	color: #9ca3af;
-}
-
-.section-worst {
-	display: flex;
-	flex-direction: column;
-	align-items: flex-end;
-	gap: 2px;
-	font-size: 12px;
-}
-
-.section-worst-label {
-	font-size: 11px;
-	color: #6b7280;
-}
-
-.section-worst-value {
-	font-weight: 500;
-	color: #b91c1c;
-}
-
-.section-grid {
-	display: flex;
-	flex-direction: column;
-	gap: 6px;
-	margin-top: 4px;
-}
-
-.section-row {
-	display: flex;
-	flex-direction: column;
-	gap: 4px;
-	font-size: 12px;
-	padding: 4px 0;
-	border-top: 1px dashed rgba(209, 213, 219, 0.7);
-}
-
-.section-row:first-of-type {
-	border-top: none;
-}
-
-.section-row-main {
-	display: flex;
-	flex-direction: column;
-	gap: 4px;
-}
-
-.section-label {
-	font-weight: 500;
-	font-size: 12px;
-	color: #111827;
-}
-
-.theme-dark .section-label {
-	color: #e5e7eb;
-}
-
-.section-bar-wrapper {
-	display: flex;
-	align-items: center;
-	gap: 8px;
-}
-
-.section-bar-bg {
-	flex: 1;
-	height: 6px;
-	border-radius: 999px;
-	background: #e5e7eb;
-	overflow: hidden;
-}
-
-.section-bar-fill {
-	height: 100%;
-	border-radius: 999px;
-	background: linear-gradient(90deg, #f97316, #ef4444);
-}
-
-.section-bar-score {
-	font-size: 12px;
-	color: #4b5563;
-	min-width: 48px;
-	text-align: right;
-}
-
-.theme-dark .section-bar-bg {
-	background: rgba(31, 41, 55, 1);
-}
-
-.theme-dark .section-bar-score {
-	color: #9ca3af;
-}
-
-.section-row-meta {
-	font-size: 11px;
-	color: #6b7280;
-}
-
-.theme-dark .section-row-meta {
-	color: #9ca3af;
-}
-
 /* Style inspector */
 
 .style-card {
@@ -1750,5 +1611,139 @@ button {
 .style-footnote {
 	margin: 6px 0 0;
 	font-size: 11px;
+	color: #9ca3af;
+}
+
+/* Per section breakdown. compact card */
+
+.section-card {
+	border-radius: 12px;
+	padding: 10px 12px 12px;
+	background: #f9fafb;
+	border: 1px solid #e5e7eb;
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+	margin-top: 4px;
+}
+
+.theme-dark .section-card {
+	background: rgba(15, 23, 42, 0.95);
+	border-color: rgba(55, 65, 81, 0.9);
+}
+
+.section-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: flex-start;
+	gap: 12px;
+	flex-wrap: wrap;
+}
+
+.section-header h2 {
+	margin: 0 0 2px;
+	font-size: 14px;
+	font-weight: 600;
+}
+
+.section-subtitle {
+	margin: 0;
+	font-size: 12px;
+	color: #6b7280;
+}
+
+.theme-dark .section-subtitle {
+	color: #9ca3af;
+}
+
+.section-worst {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-end;
+	gap: 2px;
+	font-size: 12px;
+}
+
+.section-worst-label {
+	font-size: 11px;
+	color: #6b7280;
+}
+
+.section-worst-value {
+	font-weight: 500;
+	color: #b91c1c;
+}
+
+.section-grid {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+	margin-top: 4px;
+}
+
+.section-row {
+	display: flex;
+	flex-direction: column;
+	gap: 3px;
+	font-size: 12px;
+	padding: 4px 0;
+	border-top: 1px dashed rgba(209, 213, 219, 0.7);
+}
+
+.section-row:first-of-type {
+	border-top: none;
+}
+
+.section-label {
+	font-weight: 500;
+	font-size: 12px;
+	color: #111827;
+}
+
+.theme-dark .section-label {
+	color: #e5e7eb;
+}
+
+.section-bar-wrapper {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+}
+
+.section-bar-bg {
+	flex: 1;
+	height: 6px;
+	border-radius: 999px;
+	background: #e5e7eb;
+	overflow: hidden;
+}
+
+.section-bar-fill {
+	height: 100%;
+	border-radius: 999px;
+	background: linear-gradient(90deg, #f97316, #ef4444);
+}
+
+.section-bar-score {
+	font-size: 12px;
+	color: #4b5563;
+	min-width: 46px;
+	text-align: right;
+}
+
+.theme-dark .section-bar-bg {
+	background: rgba(31, 41, 55, 1);
+}
+
+.theme-dark .section-bar-score {
+	color: #9ca3af;
+}
+
+.section-row-meta {
+	font-size: 11px;
+	color: #6b7280;
+}
+
+.theme-dark .section-row-meta {
 	color: #9ca3af;
 }

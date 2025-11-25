@@ -1,6 +1,7 @@
 import React from "react";
 import VisualDiffTabs from "./VisualDiffTabs";
 import StyleInspector from "./StyleInspector";
+import SectionBreakdown from "./SectionBreakdown";
 
 function downloadImage(dataUrl, filename) {
 	if (!dataUrl) return;
@@ -54,19 +55,6 @@ export default function ResultsView({
 			? result.matchScore >= passThreshold
 			: null;
 
-	const sectionScores = Array.isArray(result.sectionScores)
-		? result.sectionScores
-		: [];
-
-	const worstSection =
-		sectionScores.length > 0
-			? sectionScores.reduce(
-					(lowest, s) =>
-						lowest == null || s.matchScore < lowest.matchScore ? s : lowest,
-					null
-			  )
-			: null;
-
 	return (
 		<section className="card card-results">
 			<div className="results-wrapper">
@@ -106,59 +94,6 @@ export default function ResultsView({
 					</div>
 				</div>
 
-				{/* Per section breakdown */}
-				{sectionScores.length > 0 && (
-					<section className="section-card">
-						<div className="section-header">
-							<div>
-								<h2>Per section breakdown</h2>
-								<p className="section-subtitle">
-									The page is split into vertical slices. Use this to see which
-									part of the viewport is causing most mismatch.
-								</p>
-							</div>
-							{worstSection && (
-								<div className="section-worst">
-									<span className="section-worst-label">Worst section</span>
-									<span className="section-worst-value">
-										{worstSection.label} · {worstSection.matchScore.toFixed(1)}%
-									</span>
-								</div>
-							)}
-						</div>
-
-						<div className="section-grid">
-							{sectionScores.map((s) => (
-								<div key={s.id} className="section-row">
-									<div className="section-row-main">
-										<div className="section-label">{s.label}</div>
-										<div className="section-bar-wrapper">
-											<div className="section-bar-bg">
-												<div
-													className="section-bar-fill"
-													style={{ width: `${s.matchScore}%` }}
-												/>
-											</div>
-											<div className="section-bar-score">
-												{s.matchScore.toFixed(1)}%
-											</div>
-										</div>
-									</div>
-									<div className="section-row-meta">
-										<span>
-											Diff pixels{" "}
-											<strong>
-												{s.diffPixels.toLocaleString("en-US")} /{" "}
-												{s.totalPixels.toLocaleString("en-US")}
-											</strong>
-										</span>
-									</div>
-								</div>
-							))}
-						</div>
-					</section>
-				)}
-
 				{/* Export buttons */}
 				<div className="export-row">
 					<button
@@ -186,7 +121,7 @@ export default function ResultsView({
 					</button>
 				</div>
 
-				{/* Thumbnails */}
+				{/* Three thumbnails */}
 				<div className="preview-grid">
 					<div className="preview-column">
 						<h3>Design</h3>
@@ -218,11 +153,17 @@ export default function ResultsView({
 				{/* Style inspector */}
 				<StyleInspector styleResult={styleResult} />
 
+				{/* Per section breakdown moved near the bottom */}
+				{Array.isArray(result.sectionScores) &&
+					result.sectionScores.length > 0 && (
+						<SectionBreakdown sectionScores={result.sectionScores} />
+					)}
+
 				<p className="hint-text">
 					Darker areas on the diff map highlight stronger differences between
-					the design and the implementation. Use the section breakdown, visual
-					tools and the style inspector to find concrete layout, typography and
-					color issues.
+					the design and the implementation. Use the visual tools, the style
+					inspector and the section breakdown to find concrete layout,
+					typography and spacing issues.
 				</p>
 			</div>
 		</section>
