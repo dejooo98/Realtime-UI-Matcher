@@ -1,9 +1,16 @@
+// index.js
 import express from "express";
 import cors from "cors";
 import multer from "multer";
-import { PNG } from "pngjs";
-import pixelmatch from "pixelmatch";
-import puppeteer from "puppeteer";
+
+import {
+	toPngBuffer,
+	computeDiff,
+	screenshotUrl,
+	parseViewportWidth,
+	parseThreshold,
+	analyzeStyleForUrls,
+} from "./helper.js";
 
 const app = express();
 const port = process.env.PORT || 4000;
@@ -13,113 +20,18 @@ app.use(express.json());
 
 const upload = multer({ storage: multer.memoryStorage() });
 
-/* ---------- Helpers ---------- */
-
-function toPngBuffer(data) {
-	if (!data) {
-		throw new Error("Missing image data.");
-	}
-	if (Buffer.isBuffer(data)) {
-		return data;
-	}
-	if (data instanceof Uint8Array) {
-		return Buffer.from(data);
-	}
-	if (typeof data === "string") {
-		return Buffer.from(data, "base64");
-	}
-	throw new Error("Unsupported image data type for PNG parsing.");
-}
-
-function computeDiff(aInput, bInput, threshold = 0.1) {
-	const aBuffer = toPngBuffer(aInput);
-	const bBuffer = toPngBuffer(bInput);
-
-	const pngA = PNG.sync.read(aBuffer);
-	const pngB = PNG.sync.read(bBuffer);
-
-	const width = Math.min(pngA.width, pngB.width);
-	const height = Math.min(pngA.height, pngB.height);
-
-	if (!width || !height) {
-		throw new Error("Invalid image dimensions.");
-	}
-
-	const aCropped = new PNG({ width, height });
-	const bCropped = new PNG({ width, height });
-
-	PNG.bitblt(pngA, aCropped, 0, 0, width, height, 0, 0);
-	PNG.bitblt(pngB, bCropped, 0, 0, width, height, 0, 0);
-
-	const diffPng = new PNG({ width, height });
-
-	const diffPixels = pixelmatch(
-		aCropped.data,
-		bCropped.data,
-		diffPng.data,
-		width,
-		height,
-		{ threshold }
-	);
-
-	const totalPixels = width * height;
-	const diffRatio = diffPixels / totalPixels;
-	const matchScore = Math.max(0, Math.min(100, 100 - diffRatio * 100));
-	const diffBuffer = PNG.sync.write(diffPng);
-
-	return { width, height, diffPixels, totalPixels, matchScore, diffBuffer };
-}
-
-async function screenshotUrl(url, width, maxHeight = 3000) {
-	const browser = await puppeteer.launch({
-		headless: "new",
-		args: ["--no-sandbox", "--disable-setuid-sandbox"],
-	});
-
-	try {
-		const page = await browser.newPage();
-		await page.setViewport({ width, height: 900 });
-		await page.goto(url, { waitUntil: "networkidle2", timeout: 60000 });
-
-		const bodyHeight = await page.evaluate(
-			() =>
-				document.body.scrollHeight ||
-				document.documentElement.scrollHeight ||
-				900
-		);
-
-		await page.setViewport({
-			width,
-			height: Math.min(bodyHeight, maxHeight),
-		});
-
-		const buffer = await page.screenshot({
-			fullPage: true,
-			type: "png",
-		});
-
-		return buffer;
-	} finally {
-		await browser.close();
-	}
-}
-
-function parseViewportWidth(raw) {
-	const width = parseInt(raw, 10);
-	if (!width || width <= 0) {
-		throw new Error("viewportWidth must be a positive number.");
-	}
-	return width;
-}
-
-function parseThreshold(raw) {
-	const t = parseFloat(raw);
-	return Number.isFinite(t) ? t : 0.1;
-}
+/* ---------- Shared response helper ---------- */
 
 function sendDiffResponse(res, baseA, baseB, diffMeta) {
-	const { width, height, diffPixels, totalPixels, matchScore, diffBuffer } =
-		diffMeta;
+	const {
+		width,
+		height,
+		diffPixels,
+		totalPixels,
+		matchScore,
+		diffBuffer,
+		sectionScores,
+	} = diffMeta;
 
 	res.json({
 		width,
@@ -127,6 +39,7 @@ function sendDiffResponse(res, baseA, baseB, diffMeta) {
 		diffPixels,
 		totalPixels,
 		matchScore,
+		sectionScores,
 		designImage: `data:image/png;base64,${baseA.toString("base64")}`,
 		screenshotImage: `data:image/png;base64,${baseB.toString("base64")}`,
 		diffImage: `data:image/png;base64,${diffBuffer.toString("base64")}`,
@@ -139,6 +52,9 @@ app.get("/health", (req, res) => {
 	res.json({ status: "ok" });
 });
 
+/**
+ * Design vs URL
+ */
 app.post("/api/compare", upload.single("design"), async (req, res) => {
 	try {
 		const { url, viewportWidth, threshold: thr } = req.body;
@@ -171,6 +87,9 @@ app.post("/api/compare", upload.single("design"), async (req, res) => {
 	}
 });
 
+/**
+ * Image vs Image
+ */
 app.post(
 	"/api/compare-images",
 	upload.fields([
@@ -205,6 +124,9 @@ app.post(
 	}
 );
 
+/**
+ * URL vs URL
+ */
 app.post("/api/compare-urls", async (req, res) => {
 	try {
 		const { urlA, urlB, viewportWidth, threshold: thr } = req.body;
@@ -233,6 +155,41 @@ app.post("/api/compare-urls", async (req, res) => {
 			error.message === "viewportWidth must be a positive number."
 				? error.message
 				: "Error during URL comparison.";
+		res.status(500).json({
+			error: message,
+			details: error.message,
+		});
+	}
+});
+
+/**
+ * Style analysis (URL design vs URL implementation)
+ */
+app.post("/api/analyze-style", async (req, res) => {
+	try {
+		const { urlDesign, urlImplementation, viewportWidth } = req.body;
+
+		if (!urlDesign || !urlImplementation || !viewportWidth) {
+			return res.status(400).json({
+				error: "urlDesign, urlImplementation and viewportWidth are required.",
+			});
+		}
+
+		const width = parseViewportWidth(viewportWidth);
+
+		const analysis = await analyzeStyleForUrls(
+			urlDesign,
+			urlImplementation,
+			width
+		);
+
+		res.json(analysis);
+	} catch (error) {
+		console.error("Analyze style error:", error);
+		const message =
+			error.message === "viewportWidth must be a positive number."
+				? error.message
+				: "Error during style analysis.";
 		res.status(500).json({
 			error: message,
 			details: error.message,

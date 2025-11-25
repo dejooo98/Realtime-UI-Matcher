@@ -1,4 +1,3 @@
-// client/src/App.jsx
 import React, { useState, useEffect } from "react";
 import Sidebar from "./components/Sidebar";
 import ComparisonView from "./components/ComparisonView";
@@ -8,6 +7,7 @@ import HistoryView from "./components/HistoryView";
 const API_DESIGN_URL = "http://localhost:4000/api/compare";
 const API_IMAGE_IMAGE = "http://localhost:4000/api/compare-images";
 const API_URL_URL = "http://localhost:4000/api/compare-urls";
+const API_STYLE = "http://localhost:4000/api/analyze-style";
 
 function thresholdFromStrictness(level) {
 	if (level === "high") return 0.05;
@@ -43,6 +43,7 @@ export default function App() {
 	const [passThreshold, setPassThreshold] = useState(98);
 
 	const [result, setResult] = useState(null);
+	const [styleResult, setStyleResult] = useState(null); // style inspector data
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState("");
 
@@ -81,6 +82,7 @@ export default function App() {
 		e.preventDefault();
 		setError("");
 		setResult(null);
+		setStyleResult(null); // reset style inspector on every new run
 
 		if (mode === "design-url") {
 			if (!designFile) {
@@ -120,6 +122,7 @@ export default function App() {
 			const threshold = thresholdFromStrictness(strictness);
 			let data;
 
+			// DESIGN vs URL
 			if (mode === "design-url") {
 				const formData = new FormData();
 				formData.append("design", designFile);
@@ -140,6 +143,7 @@ export default function App() {
 				data = await res.json();
 			}
 
+			// IMAGE vs IMAGE
 			if (mode === "image-image") {
 				const formData = new FormData();
 				formData.append("design", designFile);
@@ -159,6 +163,7 @@ export default function App() {
 				data = await res.json();
 			}
 
+			// URL vs URL
 			if (mode === "url-url") {
 				const res = await fetch(API_URL_URL, {
 					method: "POST",
@@ -177,6 +182,27 @@ export default function App() {
 				}
 
 				data = await res.json();
+
+				// extra. style analysis (best-effort, ne ruši glavni rezultat)
+				try {
+					const styleRes = await fetch(API_STYLE, {
+						method: "POST",
+						headers: { "Content-Type": "application/json" },
+						body: JSON.stringify({
+							urlDesign: designUrl,
+							urlImplementation: implUrl,
+							viewportWidth,
+						}),
+					});
+
+					if (styleRes.ok) {
+						const styleJson = await styleRes.json();
+						setStyleResult(styleJson);
+					}
+				} catch (styleErr) {
+					console.error("Style analysis failed:", styleErr);
+					// tiho ignorišemo, da ne blokira main diff
+				}
 			}
 
 			setResult(data);
@@ -209,6 +235,7 @@ export default function App() {
 		setViewportWidth("1440");
 		setError("");
 		setResult(null);
+		setStyleResult(null);
 	};
 
 	return (
@@ -263,7 +290,8 @@ export default function App() {
 									<h1>Results</h1>
 									<p>
 										Review the latest comparison result. See the score,
-										pass/fail status, the three views and the overlay preview.
+										pass/fail status, the three views, the overlay preview and
+										the style inspector.
 									</p>
 								</>
 							)}
@@ -312,6 +340,7 @@ export default function App() {
 									result={result}
 									loading={loading}
 									passThreshold={passThreshold}
+									styleResult={styleResult}
 								/>
 							</div>
 						)}
