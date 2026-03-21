@@ -159,11 +159,14 @@ export function createApp() {
 	}
 
 	app.get("/health", (req, res) => {
+		const env =
+			process.env.NODE_ENV ||
+			(isServerless ? "production" : "development");
 		res.json({
 			status: "ok",
 			service: "realtime-ui-matcher",
 			uptimeSec: Math.floor((Date.now() - serverStartedAt) / 1000),
-			env: process.env.NODE_ENV || "development",
+			env,
 			runtime: isServerless ? "serverless" : "node",
 		});
 	});
