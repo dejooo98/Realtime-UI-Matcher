@@ -141,6 +141,59 @@ export function computeDiff(
 	};
 }
 
+function isServerlessRuntime() {
+	return (
+		Boolean(process.env.NETLIFY) ||
+		Boolean(process.env.AWS_LAMBDA_FUNCTION_NAME)
+	);
+}
+
+/** Netlify/AWS sync functions have ~6MB response bodies; keep PNGs bounded. */
+export const SERVERLESS_PNG_MAX_DIMENSION = 2048;
+
+/**
+ * Downscale PNG so max(width, height) ≤ maxDim (nearest-neighbor).
+ * @param {Buffer | Uint8Array | string} input
+ * @param {number} [maxDim]
+ * @returns {Buffer}
+ */
+export function clampPngMaxDimension(
+	input,
+	maxDim = SERVERLESS_PNG_MAX_DIMENSION
+) {
+	const buf = toPngBuffer(input);
+	const src = PNG.sync.read(buf);
+	const w = src.width;
+	const h = src.height;
+	if (w <= maxDim && h <= maxDim) {
+		return buf;
+	}
+	const scale = Math.min(maxDim / w, maxDim / h);
+	const nw = Math.max(1, Math.round(w * scale));
+	const nh = Math.max(1, Math.round(h * scale));
+	const dst = new PNG({ width: nw, height: nh });
+
+	for (let y = 0; y < nh; y++) {
+		for (let x = 0; x < nw; x++) {
+			const sx = Math.min(w - 1, Math.floor((x * w) / nw));
+			const sy = Math.min(h - 1, Math.floor((y * h) / nh));
+			const si = (w * sy + sx) << 2;
+			const di = (nw * y + x) << 2;
+			dst.data[di] = src.data[si];
+			dst.data[di + 1] = src.data[si + 1];
+			dst.data[di + 2] = src.data[si + 2];
+			dst.data[di + 3] = src.data[si + 3];
+		}
+	}
+
+	return PNG.sync.write(dst);
+}
+
+function maybeClampPngForServerless(buffer) {
+	if (!isServerlessRuntime()) return buffer;
+	return clampPngMaxDimension(buffer);
+}
+
 /**
  * @param {string} url
  * @param {number} width
@@ -238,7 +291,8 @@ export async function screenshotUrl(url, width, options = {}) {
 				node.scrollIntoView({ block: "center", inline: "nearest" })
 			);
 			const cssSummary = await runCssSummary();
-			const buffer = await el.screenshot({ type: "png" });
+			let buffer = await el.screenshot({ type: "png" });
+			buffer = maybeClampPngForServerless(buffer);
 			return { buffer, a11y: a11ySummary, cssSummary };
 		}
 
@@ -255,10 +309,11 @@ export async function screenshotUrl(url, width, options = {}) {
 		});
 
 		const cssSummary = await runCssSummary();
-		const buffer = await page.screenshot({
+		let buffer = await page.screenshot({
 			fullPage: true,
 			type: "png",
 		});
+		buffer = maybeClampPngForServerless(buffer);
 
 		return { buffer, a11y: a11ySummary, cssSummary };
 	} finally {

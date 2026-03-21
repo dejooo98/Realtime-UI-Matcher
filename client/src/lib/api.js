@@ -79,6 +79,12 @@ async function readErrorPayload(res) {
 		}
 	}
 
+	if (res.status === 502 || res.status === 503) {
+		const hint =
+			"Gateway error from the host (timeout, crash, or response too large). Try smaller images; on Netlify, check Functions logs and plan limits.";
+		details = details ? `${details} ${hint}` : hint;
+	}
+
 	return {
 		message,
 		details,
@@ -111,6 +117,12 @@ export async function fetchJson(url, init = {}) {
 	} catch (e) {
 		if (e instanceof ApiError) throw e;
 		if (e && e.name === "AbortError") throw abortError();
+		if (e instanceof TypeError) {
+			throw new ApiError(
+				"Network error — the request did not reach the server. Check your connection or try again.",
+				{ status: 0 }
+			);
+		}
 		throw e;
 	} finally {
 		clearTimeout(id);
@@ -155,6 +167,12 @@ export async function postFormData(url, formData, options = {}) {
 	} catch (e) {
 		if (e instanceof ApiError) throw e;
 		if (e && e.name === "AbortError") throw abortError();
+		if (e instanceof TypeError) {
+			throw new ApiError(
+				"Network error — the request did not reach the server. Check your connection or try again.",
+				{ status: 0 }
+			);
+		}
 		throw e;
 	} finally {
 		clearTimeout(id);

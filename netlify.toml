@@ -11,7 +11,9 @@
 #   - API_RATE_LIMIT_MAX=60                       (optional; server default applies)
 #   - Do NOT set VITE_API_URL for default hosting: the SPA calls /api on the same origin.
 #
-# Functions need a plan that allows timeout ≥ your slowest compare (default 60s below).
+# Function timeout: `timeout = 60` requires a Netlify plan that allows it (free tier is
+# typically capped at 10s — URL/screenshot compares may need Pro or a longer limit).
+# Large JSON responses also hit ~6MB Lambda limits; the app clamps PNGs in serverless mode.
 
 [build]
   command = "npm run build:netlify"

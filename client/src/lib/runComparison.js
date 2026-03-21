@@ -4,6 +4,7 @@ import {
 	postJson,
 	postJsonIfOk,
 } from "./api.js";
+import { resizePngFileToMaxDimension } from "./imageResize.js";
 
 function thresholdFromStrictness(level) {
 	if (level === "high") return 0.05;
@@ -64,7 +65,8 @@ export async function runComparison(input) {
 
 	if (mode === "design-url") {
 		const formData = new FormData();
-		formData.append("design", designFile);
+		const design = await resizePngFileToMaxDimension(designFile);
+		formData.append("design", design);
 		formData.append("url", url.trim());
 		formData.append("viewportWidth", viewportWidth);
 		formData.append("threshold", String(threshold));
@@ -90,8 +92,10 @@ export async function runComparison(input) {
 		data = await postFormData(endpoints.compare(), formData);
 	} else if (mode === "image-image") {
 		const formData = new FormData();
-		formData.append("design", designFile);
-		formData.append("implementation", implFile);
+		const design = await resizePngFileToMaxDimension(designFile);
+		const implementation = await resizePngFileToMaxDimension(implFile);
+		formData.append("design", design);
+		formData.append("implementation", implementation);
 		formData.append("threshold", String(threshold));
 		if (captureOptions.maskRegionsJson?.trim()) {
 			formData.append("maskRegions", captureOptions.maskRegionsJson.trim());

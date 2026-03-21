@@ -12,6 +12,7 @@ import {
 	parseThreshold,
 	analyzeStyleForUrls,
 	buildStyleReportFromSummaries,
+	clampPngMaxDimension,
 } from "./helper.js";
 import {
 	parseCaptureOptions,
@@ -170,7 +171,10 @@ export function createApp() {
 			const safeUrl = await assertSafeUrl(url);
 			const shot = await screenshotUrl(safeUrl, width, capture);
 
-			const designBuf = toPngBuffer(file.buffer);
+			let designBuf = toPngBuffer(file.buffer);
+			if (isServerless) {
+				designBuf = clampPngMaxDimension(designBuf);
+			}
 			const screenshotBuf = toPngBuffer(shot.buffer);
 
 			const diffMeta = computeDiff(
@@ -210,8 +214,12 @@ export function createApp() {
 
 				const maskRegions = parseMaskRegions(req.body.maskRegions);
 
-				const designBuf = toPngBuffer(designFile.buffer);
-				const implBuf = toPngBuffer(implFile.buffer);
+				let designBuf = toPngBuffer(designFile.buffer);
+				let implBuf = toPngBuffer(implFile.buffer);
+				if (isServerless) {
+					designBuf = clampPngMaxDimension(designBuf);
+					implBuf = clampPngMaxDimension(implBuf);
+				}
 
 				const diffMeta = computeDiff(
 					designBuf,
