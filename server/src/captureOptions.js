@@ -7,9 +7,23 @@ const WAIT_UNTIL = new Set([
 	"networkidle0",
 ]);
 
-/** Netlify starter functions often cap at ~10s total (cold start + Puppeteer). */
-const SERVERLESS_NAV_MAX_MS = 8000;
-const SERVERLESS_POST_DELAY_MAX_MS = 500;
+/**
+ * Max time for page.goto on Netlify/Lambda. A too-low cap causes
+ * "Navigation timeout of N ms exceeded" on slow WordPress hosts.
+ * Set env SERVERLESS_NAV_MAX_MS (5000–120000) in Netlify → Environment variables
+ * to match your function timeout (e.g. 55000 if your plan allows 60s functions).
+ * Default 25s helps paid tiers; free tier is still often limited to ~10s total wall time.
+ */
+function serverlessNavMaxMs() {
+	const raw = process.env.SERVERLESS_NAV_MAX_MS;
+	const n = Number.parseInt(String(raw ?? "").trim(), 10);
+	if (Number.isFinite(n) && n >= 5000 && n <= 120_000) {
+		return n;
+	}
+	return 25_000;
+}
+
+const SERVERLESS_POST_DELAY_MAX_MS = 1200;
 
 /**
  * Parse capture options from JSON or multipart fields (strings).
@@ -63,7 +77,7 @@ export function parseCaptureOptions(body) {
 		if (waitUntilOut === "networkidle2" || waitUntilOut === "networkidle0") {
 			waitUntilOut = "domcontentloaded";
 		}
-		navigationTimeoutMs = Math.min(navigationTimeoutMs, SERVERLESS_NAV_MAX_MS);
+		navigationTimeoutMs = Math.min(navigationTimeoutMs, serverlessNavMaxMs());
 		postDelayMs = Math.min(postDelayMs, SERVERLESS_POST_DELAY_MAX_MS);
 		includeCssSummary = false;
 		includeA11y = false;

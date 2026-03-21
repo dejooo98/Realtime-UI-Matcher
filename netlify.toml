@@ -9,6 +9,8 @@
 # Optional env in Netlify UI (Site configuration → Environment variables):
 #   - CORS_ORIGIN=https://YOUR_SITE.netlify.app  (only if browser calls API from another origin)
 #   - API_RATE_LIMIT_MAX=60                       (optional; server default applies)
+#   - SERVERLESS_NAV_MAX_MS=55000                 (optional; max Puppeteer goto ms on Netlify;
+#     default 25000. Match to your function timeout if you upgrade the plan.)
 #   - Do NOT set VITE_API_URL for default hosting: the SPA calls /api on the same origin.
 #
 # Function timeout: `timeout = 60` requires a Netlify plan that allows it (free tier is

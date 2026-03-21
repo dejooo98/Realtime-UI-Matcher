@@ -87,7 +87,7 @@ async function readErrorPayload(res) {
 
 	if (res.status === 504) {
 		const hint =
-			"Gateway timeout — URL capture (Puppeteer) exceeded the host time limit. On Netlify free tier functions are often capped around 10s; upgrade for longer timeouts or run the API locally for heavy pages.";
+			"Gateway timeout — URL capture (Puppeteer) exceeded the host time limit. Netlify starter plans often cap functions around 10s total; upgrade the plan (and set SERVERLESS_NAV_MAX_MS in Netlify env if needed) or run the API locally for slow sites.";
 		details = details ? `${details} ${hint}` : hint;
 	}
 
