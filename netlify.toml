@@ -34,9 +34,10 @@
   memory = 1024
 
 # API + health → Express function (same-origin as the SPA; no separate API host).
+# :splat matches Netlify’s Express guide so the function receives the full /api/… path.
 [[redirects]]
   from = "/api/*"
-  to = "/.netlify/functions/api"
+  to = "/.netlify/functions/api/:splat"
   status = 200
   force = true
 

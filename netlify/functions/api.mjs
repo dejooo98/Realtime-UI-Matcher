@@ -4,6 +4,11 @@
  */
 import serverless from "serverless-http";
 import { createApp } from "../../server/src/app.js";
+import { fixMultipartLambdaEvent } from "../../server/src/netlifyMultipartEventFix.js";
 
 const app = createApp();
-export const handler = serverless(app);
+const handle = serverless(app);
+
+export const handler = (event, context) => {
+	return handle(fixMultipartLambdaEvent(event), context);
+};
