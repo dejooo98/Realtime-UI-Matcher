@@ -1,6 +1,7 @@
 import { PNG } from "pngjs";
 import pixelmatch from "pixelmatch";
 import { getBrowser } from "./browserPool.js";
+import { isServerlessRuntime } from "./runtimeEnv.js";
 import { applyMaskRegions } from "./mask.js";
 import { resolveFigmaCaptureUrl, figmaUrlMeta } from "./figmaUrl.js";
 import {
@@ -139,13 +140,6 @@ export function computeDiff(
 		diffBuffer,
 		sectionScores,
 	};
-}
-
-function isServerlessRuntime() {
-	return (
-		Boolean(process.env.NETLIFY) ||
-		Boolean(process.env.AWS_LAMBDA_FUNCTION_NAME)
-	);
 }
 
 /** Netlify/AWS sync functions have ~6MB response bodies; keep PNGs bounded. */

@@ -3,8 +3,9 @@
  * - Local dev: full `puppeteer` (bundled Chromium) when installed.
  * - Netlify / AWS Lambda: `puppeteer-core` + `@sparticuz/chromium` (serverless binary).
  */
-const useServerlessChromium = () =>
-	Boolean(process.env.NETLIFY) || Boolean(process.env.AWS_LAMBDA_FUNCTION_NAME);
+import { isServerlessRuntime } from "./runtimeEnv.js";
+
+const useServerlessChromium = () => isServerlessRuntime();
 
 let browserPromise = null;
 

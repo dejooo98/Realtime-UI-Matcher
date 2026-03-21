@@ -1,16 +1,11 @@
+import { isServerlessRuntime } from "./runtimeEnv.js";
+
 const WAIT_UNTIL = new Set([
 	"networkidle2",
 	"domcontentloaded",
 	"load",
 	"networkidle0",
 ]);
-
-function isServerlessEnv() {
-	return (
-		Boolean(process.env.NETLIFY) ||
-		Boolean(process.env.AWS_LAMBDA_FUNCTION_NAME)
-	);
-}
 
 /**
  * Parse capture options from JSON or multipart fields (strings).
@@ -56,7 +51,7 @@ export function parseCaptureOptions(body) {
 		String(raw.useFigmaEmbed) === "true" || raw.useFigmaEmbed === true;
 
 	let maxCaptureHeightOut = maxCaptureHeight;
-	if (isServerlessEnv()) {
+	if (isServerlessRuntime()) {
 		/* Smaller captures = faster runs + smaller JSON under Lambda response limits */
 		maxCaptureHeightOut = Math.min(maxCaptureHeightOut, 2000);
 	}

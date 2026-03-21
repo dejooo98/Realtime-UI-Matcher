@@ -20,10 +20,9 @@ import {
 } from "./captureOptions.js";
 import { assertSafeUrl, UrlSafetyError } from "./urlSafety.js";
 import { parseMaskRegions } from "./mask.js";
+import { isServerlessRuntime } from "./runtimeEnv.js";
 
-const isServerless =
-	Boolean(process.env.NETLIFY) ||
-	Boolean(process.env.AWS_LAMBDA_FUNCTION_NAME);
+const isServerless = isServerlessRuntime();
 
 /** Netlify Functions: smaller body + in-memory rate limit is per instance */
 const jsonLimit = isServerless ? "256kb" : "512kb";
