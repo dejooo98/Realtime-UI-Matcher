@@ -1,0 +1,62 @@
+# Optional: call a deployed Realtime UI Matcher API from GitHub Actions.
+# Set repository secret RUM_SERVER_URL to the server base URL (no trailing slash).
+name: UI matcher remote compare
+
+on:
+  workflow_dispatch:
+    inputs:
+      url_a:
+        description: "First URL (design / baseline)"
+        required: true
+        type: string
+      url_b:
+        description: "Second URL (implementation)"
+        required: true
+        type: string
+      viewport:
+        description: "Viewport width in px"
+        required: true
+        default: "1440"
+        type: string
+
+jobs:
+  compare:
+    runs-on: ubuntu-latest
+    steps:
+      - name: POST /api/compare-urls
+        env:
+          BASE: ${{ secrets.RUM_SERVER_URL }}
+          URL_A: ${{ github.event.inputs.url_a }}
+          URL_B: ${{ github.event.inputs.url_b }}
+          VP: ${{ github.event.inputs.viewport }}
+        run: |
+          set -e
+          if [ -z "$BASE" ]; then
+            echo "Skip: RUM_SERVER_URL secret is not set."
+            exit 0
+          fi
+          python3 - <<'PY'
+          import json, os, urllib.error, urllib.request
+
+          base = os.environ["BASE"].rstrip("/")
+          body = json.dumps({
+              "urlA": os.environ["URL_A"],
+              "urlB": os.environ["URL_B"],
+              "viewportWidth": os.environ["VP"],
+              "threshold": 0.1,
+          }).encode()
+
+          req = urllib.request.Request(
+              f"{base}/api/compare-urls",
+              data=body,
+              headers={"Content-Type": "application/json"},
+              method="POST",
+          )
+          try:
+              with urllib.request.urlopen(req, timeout=180) as resp:
+                  data = resp.read().decode("utf-8", "replace")
+                  print(data[:8000])
+          except urllib.error.HTTPError as e:
+              print(e.read().decode("utf-8", "replace")[:8000])
+              raise
+          PY

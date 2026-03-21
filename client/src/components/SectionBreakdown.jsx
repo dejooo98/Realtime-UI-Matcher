@@ -1,6 +1,4 @@
 // client/src/components/SectionBreakdown.jsx
-import React from "react";
-
 export default function SectionBreakdown({ sectionScores }) {
 	if (!sectionScores || !sectionScores.length) {
 		return null;

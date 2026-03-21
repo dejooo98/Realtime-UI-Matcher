@@ -1,0 +1,53 @@
+# Netlify deploy (monorepo)
+# ────────────────────────
+# Site settings should use REPOSITORY ROOT as base (Base directory: / or empty).
+# Do NOT set "Package directory" to `client` only — npm workspaces need install at
+# the repo root so `server/` deps resolve for the Netlify Function (Puppeteer API).
+#
+# Build: Vite client → client/dist. API: `netlify/functions/api.mjs` → Express app.
+#
+# Optional env in Netlify UI (Site configuration → Environment variables):
+#   - CORS_ORIGIN=https://YOUR_SITE.netlify.app  (only if browser calls API from another origin)
+#   - API_RATE_LIMIT_MAX=60                       (optional; server default applies)
+#   - Do NOT set VITE_API_URL for default hosting: the SPA calls /api on the same origin.
+#
+# Functions need a plan that allows timeout ≥ your slowest compare (default 60s below).
+
+[build]
+  command = "npm run build:netlify"
+  publish = "client/dist"
+
+[build.environment]
+  NODE_VERSION = "20"
+  # Trust X-Forwarded-* when behind Netlify’s CDN
+  TRUST_PROXY = "1"
+
+[functions]
+  directory = "netlify/functions"
+  # Include server sources + native chromium binary for @sparticuz/chromium
+  included_files = ["server/src/**", "server/package.json"]
+  node_bundler = "nft"
+
+# Longer runs for Puppeteer (requires a Netlify plan that allows >10s if you raise this).
+[functions.api]
+  timeout = 60
+  memory = 1024
+
+# API + health → Express function (same-origin as the SPA; no separate API host).
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/api"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/health"
+  to = "/.netlify/functions/api"
+  status = 200
+  force = true
+
+# SPA fallback (static files are tried first by Netlify).
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

@@ -8,11 +8,15 @@
 		"server"
 	],
 	"scripts": {
-		"dev": "turbo run dev",
+		"dev": "node scripts/dev.mjs",
+		"dev:turbo": "turbo run dev",
 		"build": "turbo run build",
-		"lint": "turbo run lint --parallel"
+		"build:netlify": "turbo run build --filter=realtime-ui-matcher-client",
+		"lint": "turbo run lint --parallel",
+		"test": "turbo run test"
 	},
 	"devDependencies": {
+		"get-port": "^7.1.0",
 		"turbo": "^2.0.0"
 	}
 }

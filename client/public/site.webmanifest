@@ -1,0 +1,17 @@
+{
+  "name": "Realtime UI Matcher",
+  "short_name": "RUM",
+  "description": "Pixel QA: compare designs to live URLs, URL vs URL, image diffs, match scores, and history.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f8fafc",
+  "theme_color": "#007aff",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
