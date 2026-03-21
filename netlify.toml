@@ -25,9 +25,8 @@
   # Trust X-Forwarded-* when behind Netlify’s CDN
   TRUST_PROXY = "1"
 
-# Production API should not report env "development" on /health
-[context.production.environment]
-  NODE_ENV = "production"
+# Do not set NODE_ENV=production here: it makes `npm install` omit devDependencies
+# during the Netlify build (no Vite/turbo). Set NODE_ENV in Netlify UI for Functions only if needed.
 
 [functions]
   directory = "netlify/functions"
