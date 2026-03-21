@@ -39,7 +39,8 @@ function loadProjects() {
 }
 
 const DEFAULT_CAPTURE_OPTIONS = {
-	waitUntil: "networkidle2",
+	/* domcontentloaded is enough for most pixel diffs and avoids long networkidle waits */
+	waitUntil: "domcontentloaded",
 	postDelayMs: 0,
 	navTimeoutSec: 60,
 	maxCaptureHeight: 3000,

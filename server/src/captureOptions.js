@@ -7,6 +7,10 @@ const WAIT_UNTIL = new Set([
 	"networkidle0",
 ]);
 
+/** Netlify starter functions often cap at ~10s total (cold start + Puppeteer). */
+const SERVERLESS_NAV_MAX_MS = 8000;
+const SERVERLESS_POST_DELAY_MAX_MS = 500;
+
 /**
  * Parse capture options from JSON or multipart fields (strings).
  * @param {Record<string, unknown>} body
@@ -19,12 +23,12 @@ export function parseCaptureOptions(body) {
 		: "networkidle2";
 
 	const navSec = Number.parseInt(String(raw.navTimeoutSec ?? ""), 10);
-	const navigationTimeoutMs = Number.isFinite(navSec)
+	let navigationTimeoutMs = Number.isFinite(navSec)
 		? Math.min(120_000, Math.max(15_000, navSec * 1000))
 		: 60_000;
 
 	const postMs = Number.parseInt(String(raw.postDelayMs ?? ""), 10);
-	const postDelayMs = Number.isFinite(postMs)
+	let postDelayMs = Number.isFinite(postMs)
 		? Math.min(10_000, Math.max(0, postMs))
 		: 0;
 
@@ -41,23 +45,32 @@ export function parseCaptureOptions(body) {
 		String(raw.disableAnimations) === "true" ||
 		raw.disableAnimations === true;
 
-	const includeA11y =
+	let includeA11y =
 		String(raw.includeA11y) === "true" || raw.includeA11y === true;
 
-	const includeCssSummary =
+	let includeCssSummary =
 		String(raw.includeCssSummary) === "true" || raw.includeCssSummary === true;
 
 	const useFigmaEmbed =
 		String(raw.useFigmaEmbed) === "true" || raw.useFigmaEmbed === true;
 
+	let waitUntilOut = waitUntil;
 	let maxCaptureHeightOut = maxCaptureHeight;
+
 	if (isServerlessRuntime()) {
-		/* Smaller captures = faster runs + smaller JSON under Lambda response limits */
+		/* Smaller captures + faster navigation — avoid 504 when function budget is ~10s */
 		maxCaptureHeightOut = Math.min(maxCaptureHeightOut, 2000);
+		if (waitUntilOut === "networkidle2" || waitUntilOut === "networkidle0") {
+			waitUntilOut = "domcontentloaded";
+		}
+		navigationTimeoutMs = Math.min(navigationTimeoutMs, SERVERLESS_NAV_MAX_MS);
+		postDelayMs = Math.min(postDelayMs, SERVERLESS_POST_DELAY_MAX_MS);
+		includeCssSummary = false;
+		includeA11y = false;
 	}
 
 	return {
-		waitUntil,
+		waitUntil: waitUntilOut,
 		navigationTimeoutMs,
 		postDelayMs,
 		maxCaptureHeight: maxCaptureHeightOut,
