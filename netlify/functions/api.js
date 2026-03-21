@@ -1,18 +1,29 @@
 /**
- * Netlify Function: Express API (screenshots, diff, style) via serverless-http.
- * Rewrites in netlify.toml send /api/* and /health here.
- *
- * This folder has package.json "type":"module" so the handler loads as ESM.
- * A .mjs file was previously required() from a CJS shim and crashed at runtime.
+ * Netlify Function entry — MUST be CommonJS.
+ * Netlify’s Lambda shim uses require(); ESM handlers cause ERR_REQUIRE_ESM.
+ * The Express app stays ESM and is loaded via dynamic import().
  */
-import "./preamble.js";
-import serverless from "serverless-http";
-import { createApp } from "../../server/src/app.js";
-import { fixMultipartLambdaEvent } from "../../server/src/netlifyMultipartEventFix.js";
+"use strict";
 
-const app = createApp();
-const handle = serverless(app);
+process.env.REALTIME_UI_MATCHER_SERVERLESS = "1";
 
-export const handler = (event, context) => {
+const serverless = require("serverless-http");
+
+let cachedHandle = null;
+
+async function getHandle() {
+	if (!cachedHandle) {
+		const { createApp } = await import("../../server/src/app.js");
+		const app = createApp();
+		cachedHandle = serverless(app);
+	}
+	return cachedHandle;
+}
+
+exports.handler = async (event, context) => {
+	const { fixMultipartLambdaEvent } = await import(
+		"../../server/src/netlifyMultipartEventFix.js"
+	);
+	const handle = await getHandle();
 	return handle(fixMultipartLambdaEvent(event), context);
 };
