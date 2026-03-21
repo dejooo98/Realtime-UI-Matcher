@@ -25,11 +25,24 @@
   # Trust X-Forwarded-* when behind Netlify’s CDN
   TRUST_PROXY = "1"
 
+# Production API should not report env "development" on /health
+[context.production.environment]
+  NODE_ENV = "production"
+
 [functions]
   directory = "netlify/functions"
   # Include server sources + native chromium binary for @sparticuz/chromium
   included_files = ["server/src/**", "server/package.json", "netlify/functions/package.json"]
   node_bundler = "nft"
+  # puppeteer-core → chromium-bidi → mitt (ESM). NFT inlining breaks `import mitt from 'mitt'`.
+  external_node_modules = [
+    "@sparticuz/chromium",
+    "puppeteer-core",
+    "chromium-bidi",
+    "mitt",
+    "devtools-protocol",
+    "ws"
+  ]
 
 # Longer runs for Puppeteer (requires a Netlify plan that allows >10s if you raise this).
 [functions.api]
