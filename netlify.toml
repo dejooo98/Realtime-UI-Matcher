@@ -13,7 +13,8 @@
 #
 # Function timeout: `timeout = 60` requires a Netlify plan that allows it (free tier is
 # typically capped at 10s — URL/screenshot compares may need Pro or a longer limit).
-# Large JSON responses also hit ~6MB Lambda limits; the app clamps PNGs in serverless mode.
+# Large JSON responses also hit ~6MB Lambda limits; the app clamps PNGs and omits
+# redundant base64 echoes (image–image + design–URL) in serverless mode.
 
 [build]
   command = "npm run build:netlify"

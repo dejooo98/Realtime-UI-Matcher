@@ -149,7 +149,7 @@ function isServerlessRuntime() {
 }
 
 /** Netlify/AWS sync functions have ~6MB response bodies; keep PNGs bounded. */
-export const SERVERLESS_PNG_MAX_DIMENSION = 2048;
+export const SERVERLESS_PNG_MAX_DIMENSION = 1280;
 
 /**
  * Downscale PNG so max(width, height) ≤ maxDim (nearest-neighbor).

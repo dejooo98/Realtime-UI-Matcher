@@ -5,6 +5,13 @@ const WAIT_UNTIL = new Set([
 	"networkidle0",
 ]);
 
+function isServerlessEnv() {
+	return (
+		Boolean(process.env.NETLIFY) ||
+		Boolean(process.env.AWS_LAMBDA_FUNCTION_NAME)
+	);
+}
+
 /**
  * Parse capture options from JSON or multipart fields (strings).
  * @param {Record<string, unknown>} body
@@ -48,11 +55,17 @@ export function parseCaptureOptions(body) {
 	const useFigmaEmbed =
 		String(raw.useFigmaEmbed) === "true" || raw.useFigmaEmbed === true;
 
+	let maxCaptureHeightOut = maxCaptureHeight;
+	if (isServerlessEnv()) {
+		/* Smaller captures = faster runs + smaller JSON under Lambda response limits */
+		maxCaptureHeightOut = Math.min(maxCaptureHeightOut, 2000);
+	}
+
 	return {
 		waitUntil,
 		navigationTimeoutMs,
 		postDelayMs,
-		maxCaptureHeight,
+		maxCaptureHeight: maxCaptureHeightOut,
 		...(selector ? { selector } : {}),
 		disableAnimations,
 		includeA11y,

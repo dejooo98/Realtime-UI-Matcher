@@ -78,18 +78,35 @@ export function createApp() {
 			sectionScores,
 		} = diffMeta;
 
-		res.json({
+		const {
+			clientEchoImages = false,
+			clientEchoDesign = false,
+			...restExtra
+		} = extra;
+
+		const body = {
 			width,
 			height,
 			diffPixels,
 			totalPixels,
 			matchScore,
 			sectionScores,
-			designImage: `data:image/png;base64,${baseA.toString("base64")}`,
-			screenshotImage: `data:image/png;base64,${baseB.toString("base64")}`,
 			diffImage: `data:image/png;base64,${diffBuffer.toString("base64")}`,
-			...extra,
-		});
+			...restExtra,
+		};
+
+		/* Serverless: keep JSON under ~6MB — omit PNGs the browser already has. */
+		if (clientEchoImages) {
+			body.clientEchoImages = true;
+		} else if (clientEchoDesign) {
+			body.clientEchoDesign = true;
+			body.screenshotImage = `data:image/png;base64,${baseB.toString("base64")}`;
+		} else {
+			body.designImage = `data:image/png;base64,${baseA.toString("base64")}`;
+			body.screenshotImage = `data:image/png;base64,${baseB.toString("base64")}`;
+		}
+
+		res.json(body);
 	}
 
 	function isViewportError(message) {
@@ -187,6 +204,7 @@ export function createApp() {
 
 			const extra = {};
 			if (shot.a11y) extra.a11y = { implementation: shot.a11y };
+			if (isServerless) extra.clientEchoDesign = true;
 
 			sendDiffResponse(res, designBuf, screenshotBuf, diffMeta, extra);
 		} catch (error) {
@@ -229,7 +247,9 @@ export function createApp() {
 					maskRegions
 				);
 
-				sendDiffResponse(res, designBuf, implBuf, diffMeta);
+				sendDiffResponse(res, designBuf, implBuf, diffMeta, {
+					...(isServerless ? { clientEchoImages: true } : {}),
+				});
 			} catch (error) {
 				console.error("Compare images error:", error);
 				res.status(500).json({

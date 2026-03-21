@@ -4,7 +4,10 @@ import {
 	postJson,
 	postJsonIfOk,
 } from "./api.js";
-import { resizePngFileToMaxDimension } from "./imageResize.js";
+import {
+	readFileAsDataUrl,
+	resizePngFileToMaxDimension,
+} from "./imageResize.js";
 
 function thresholdFromStrictness(level) {
 	if (level === "high") return 0.05;
@@ -90,6 +93,9 @@ export async function runComparison(input) {
 		}
 
 		data = await postFormData(endpoints.compare(), formData);
+		if (data.clientEchoDesign) {
+			data.designImage = await readFileAsDataUrl(design);
+		}
 	} else if (mode === "image-image") {
 		const formData = new FormData();
 		const design = await resizePngFileToMaxDimension(designFile);
@@ -102,6 +108,10 @@ export async function runComparison(input) {
 		}
 
 		data = await postFormData(endpoints.compareImages(), formData);
+		if (data.clientEchoImages) {
+			data.designImage = await readFileAsDataUrl(design);
+			data.screenshotImage = await readFileAsDataUrl(implementation);
+		}
 	} else if (mode === "url-url") {
 		const captureBody = buildCaptureJsonBody(captureOptions);
 
