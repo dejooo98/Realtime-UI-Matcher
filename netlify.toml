@@ -4,7 +4,7 @@
 # Do NOT set "Package directory" to `client` only — npm workspaces need install at
 # the repo root so `server/` deps resolve for the Netlify Function (Puppeteer API).
 #
-# Build: Vite client → client/dist. API: `netlify/functions/api.mjs` → Express app.
+# Build: Vite client → client/dist. API: `netlify/functions/api.js` (ESM) → Express app.
 #
 # Optional env in Netlify UI (Site configuration → Environment variables):
 #   - CORS_ORIGIN=https://YOUR_SITE.netlify.app  (only if browser calls API from another origin)
@@ -28,7 +28,7 @@
 [functions]
   directory = "netlify/functions"
   # Include server sources + native chromium binary for @sparticuz/chromium
-  included_files = ["server/src/**", "server/package.json"]
+  included_files = ["server/src/**", "server/package.json", "netlify/functions/package.json"]
   node_bundler = "nft"
 
 # Longer runs for Puppeteer (requires a Netlify plan that allows >10s if you raise this).
