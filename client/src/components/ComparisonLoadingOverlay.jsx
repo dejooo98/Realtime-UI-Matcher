@@ -7,11 +7,11 @@ export default function ComparisonLoadingOverlay({ visible, mode }) {
 	const copy = {
 		"url-url": {
 			title: "Running URL vs URL comparison",
-			body: "Opening both pages in the browser, capturing screenshots, then computing the pixel diff. Large pages or Figma can take up to a minute — please wait.",
+			body: "Opening both pages, capturing screenshots, then diffing. Image-only compares stay fast; live URLs depend on the site and host — often 30s–3min on a cold server or slow WordPress.",
 		},
 		"design-url": {
 			title: "Running Design vs URL comparison",
-			body: "Uploading your design image, capturing the live page, then diffing pixels.",
+			body: "Capturing the live URL then diffing against your PNG. Usually slower than image vs image — allow up to a few minutes on heavy pages or right after the API wakes from idle.",
 		},
 		"image-image": {
 			title: "Running image vs image comparison",

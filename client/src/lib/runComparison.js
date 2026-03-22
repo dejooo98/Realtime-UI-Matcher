@@ -85,6 +85,14 @@ export async function runComparison(input) {
 			String(captureOptions.disableAnimations)
 		);
 		formData.append("includeA11y", String(captureOptions.includeA11y));
+		formData.append(
+			"includeCssSummary",
+			String(Boolean(captureOptions.includeCssSummary))
+		);
+		formData.append(
+			"useFigmaEmbed",
+			String(Boolean(captureOptions.useFigmaEmbed))
+		);
 		if (captureOptions.selector?.trim()) {
 			formData.append("selector", captureOptions.selector.trim());
 		}
@@ -147,7 +155,8 @@ export async function runComparison(input) {
 		}
 
 		styleResult = data.styleReport ?? null;
-		if (!styleResult) {
+		/* Avoid a second double-navigation pass unless the user asked for style analysis */
+		if (!styleResult && captureOptions.includeCssSummary) {
 			styleResult = await postJsonIfOk(endpoints.analyzeStyle(), {
 				urlDesign: designUrl.trim(),
 				urlImplementation: implUrl.trim(),
@@ -156,7 +165,7 @@ export async function runComparison(input) {
 				postDelayMs: captureOptions.postDelayMs,
 				navTimeoutSec: captureOptions.navTimeoutSec,
 				disableAnimations: captureOptions.disableAnimations,
-				includeCssSummary: Boolean(captureOptions.includeCssSummary),
+				includeCssSummary: true,
 				useFigmaEmbed: Boolean(captureOptions.useFigmaEmbed),
 			});
 		}

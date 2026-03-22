@@ -207,7 +207,7 @@ function maybeClampPngForServerless(buffer) {
  */
 export async function screenshotUrl(url, width, options = {}) {
 	const {
-		waitUntil = "networkidle2",
+		waitUntil = "domcontentloaded",
 		navigationTimeoutMs = 60_000,
 		postDelayMs = 0,
 		maxCaptureHeight = 3000,
@@ -622,7 +622,7 @@ export async function analyzeStyleForUrls(
 	options = {}
 ) {
 	const {
-		waitUntil = "networkidle2",
+		waitUntil = "domcontentloaded",
 		navigationTimeoutMs = 60_000,
 		postDelayMs = 0,
 		disableAnimations = false,

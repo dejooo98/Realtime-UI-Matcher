@@ -33,7 +33,7 @@ export function parseCaptureOptions(body) {
 
 	const waitUntil = WAIT_UNTIL.has(String(raw.waitUntil))
 		? String(raw.waitUntil)
-		: "networkidle2";
+		: "domcontentloaded";
 
 	const navSec = Number.parseInt(String(raw.navTimeoutSec ?? ""), 10);
 	let navigationTimeoutMs = Number.isFinite(navSec)

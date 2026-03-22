@@ -47,7 +47,8 @@ const DEFAULT_CAPTURE_OPTIONS = {
 	selector: "",
 	disableAnimations: false,
 	includeA11y: false,
-	includeCssSummary: true,
+	/* Off by default: in-page CSS summary doubles capture cost on heavy sites */
+	includeCssSummary: false,
 	useFigmaEmbed: false,
 	maskRegionsJson: "",
 	urlMultiViewport: false,
