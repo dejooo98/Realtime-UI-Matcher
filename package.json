@@ -10,7 +10,7 @@
 	"scripts": {
 		"dev": "node scripts/dev.mjs",
 		"dev:turbo": "turbo run dev",
-		"build": "turbo run build",
+		"build": "npm run build -w realtime-ui-matcher-client",
 		"start": "node server/src/index.js",
 		"lint": "turbo run lint --parallel",
 		"test": "turbo run test"

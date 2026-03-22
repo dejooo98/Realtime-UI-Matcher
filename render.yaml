@@ -6,7 +6,8 @@ services:
     name: realtime-ui-matcher
     runtime: node
     plan: free
-    buildCommand: npm install --include=dev && npm run build
+    # Plain npm install is enough: Vite is a client dependency; root build skips Turbo.
+    buildCommand: npm ci && npm run build
     startCommand: npm start
     healthCheckPath: /health
     envVars:
