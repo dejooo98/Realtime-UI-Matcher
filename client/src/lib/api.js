@@ -1,7 +1,11 @@
 import { apiUrl } from "../config/api.js";
 
-/** Default timeout — Puppeteer screenshots can take a while */
-const DEFAULT_TIMEOUT_MS = 120_000;
+/**
+ * Default HTTP wait for compare endpoints (Puppeteer + slow sites + host cold start).
+ * Must exceed typical navTimeoutSec; URL-vs-URL can run two captures in parallel but
+ * first request after idle on Render often adds 30–90s before capture starts.
+ */
+const DEFAULT_TIMEOUT_MS = 420_000;
 
 export class ApiError extends Error {
 	/**
@@ -99,9 +103,10 @@ async function readErrorPayload(res) {
 }
 
 function abortError() {
-	return new ApiError("Request timed out. Is the server running?", {
-		status: 0,
-	});
+	return new ApiError(
+		"Request timed out before the server finished. Slow pages or a cold API host can need several minutes.",
+		{ status: 0 }
+	);
 }
 
 /**
