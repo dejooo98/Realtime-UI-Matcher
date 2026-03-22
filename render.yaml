@@ -1,5 +1,6 @@
 # Single Web Service: Express API + static Vite build (same origin).
 # Free tier services may sleep after idle time; first request can be slow (cold start).
+# Optional: RENDER_CAPTURE_MAX_DIM=1400 — cap screenshot edge length on RENDER=true (default 1600).
 
 services:
   - type: web

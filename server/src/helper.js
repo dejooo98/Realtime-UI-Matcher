@@ -184,9 +184,37 @@ export function clampPngMaxDimension(
 	return PNG.sync.write(dst);
 }
 
-function maybeClampPngForServerless(buffer) {
-	if (!isServerlessRuntime()) return buffer;
-	return clampPngMaxDimension(buffer);
+/** 0 = no clamp */
+function maxCaptureClampDimension() {
+	if (isServerlessRuntime()) return SERVERLESS_PNG_MAX_DIMENSION;
+	if (process.env.RENDER === "true") {
+		const n = Number.parseInt(
+			String(process.env.RENDER_CAPTURE_MAX_DIM ?? "1600"),
+			10
+		);
+		if (Number.isFinite(n) && n >= 640 && n <= 3200) return n;
+		return 1600;
+	}
+	return 0;
+}
+
+/**
+ * After screenshot: keep PNGs bounded on serverless + Render (OOM / proxy body limits).
+ */
+function maybeClampPngAfterCapture(buffer) {
+	const dim = maxCaptureClampDimension();
+	if (!dim) return buffer;
+	return clampPngMaxDimension(buffer, dim);
+}
+
+/**
+ * Clamp an arbitrary PNG buffer when hosted limits apply (e.g. large design upload).
+ * @param {Buffer} buf
+ */
+export function clampPngIfHostedMemoryLimit(buf) {
+	const dim = maxCaptureClampDimension();
+	if (!dim) return buf;
+	return clampPngMaxDimension(buf, dim);
 }
 
 /**
@@ -288,7 +316,7 @@ export async function screenshotUrl(url, width, options = {}) {
 			);
 			const cssSummary = await runCssSummary();
 			let buffer = await el.screenshot({ type: "png" });
-			buffer = maybeClampPngForServerless(buffer);
+			buffer = maybeClampPngAfterCapture(buffer);
 			return { buffer, a11y: a11ySummary, cssSummary };
 		}
 
@@ -309,7 +337,7 @@ export async function screenshotUrl(url, width, options = {}) {
 			fullPage: true,
 			type: "png",
 		});
-		buffer = maybeClampPngForServerless(buffer);
+		buffer = maybeClampPngAfterCapture(buffer);
 
 		return { buffer, a11y: a11ySummary, cssSummary };
 	} finally {

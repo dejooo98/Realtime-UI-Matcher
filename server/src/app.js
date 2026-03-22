@@ -12,7 +12,7 @@ import {
 	parseThreshold,
 	analyzeStyleForUrls,
 	buildStyleReportFromSummaries,
-	clampPngMaxDimension,
+	clampPngIfHostedMemoryLimit,
 } from "./helper.js";
 import {
 	parseCaptureOptions,
@@ -194,10 +194,7 @@ export function createApp() {
 			const safeUrl = await assertSafeUrl(url);
 			const shot = await screenshotUrl(safeUrl, width, capture);
 
-			let designBuf = toPngBuffer(file.buffer);
-			if (isServerless) {
-				designBuf = clampPngMaxDimension(designBuf);
-			}
+			let designBuf = clampPngIfHostedMemoryLimit(toPngBuffer(file.buffer));
 			const screenshotBuf = toPngBuffer(shot.buffer);
 
 			const diffMeta = computeDiff(
@@ -210,7 +207,8 @@ export function createApp() {
 
 			const extra = {};
 			if (shot.a11y) extra.a11y = { implementation: shot.a11y };
-			if (isServerless) extra.clientEchoDesign = true;
+			/* Omit design in JSON — client already has the file; cuts response size (avoids 502 on small hosts). */
+			extra.clientEchoDesign = true;
 
 			sendDiffResponse(res, designBuf, screenshotBuf, diffMeta, extra);
 		} catch (error) {
@@ -238,12 +236,12 @@ export function createApp() {
 
 				const maskRegions = parseMaskRegions(req.body.maskRegions);
 
-				let designBuf = toPngBuffer(designFile.buffer);
-				let implBuf = toPngBuffer(implFile.buffer);
-				if (isServerless) {
-					designBuf = clampPngMaxDimension(designBuf);
-					implBuf = clampPngMaxDimension(implBuf);
-				}
+				let designBuf = clampPngIfHostedMemoryLimit(
+					toPngBuffer(designFile.buffer)
+				);
+				let implBuf = clampPngIfHostedMemoryLimit(
+					toPngBuffer(implFile.buffer)
+				);
 
 				const diffMeta = computeDiff(
 					designBuf,
