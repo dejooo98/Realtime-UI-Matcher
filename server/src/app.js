@@ -1,4 +1,4 @@
-// app.js — Express app factory (used by node src/index.js and Netlify Functions)
+// app.js — Express app factory (used by src/index.js)
 import express from "express";
 import cors from "cors";
 import multer from "multer";
@@ -24,7 +24,7 @@ import { isServerlessRuntime } from "./runtimeEnv.js";
 
 const isServerless = isServerlessRuntime();
 
-/** Netlify Functions: smaller body + in-memory rate limit is per instance */
+/** Serverless runtimes: smaller body + in-memory rate limit is per instance */
 const jsonLimit = isServerless ? "256kb" : "512kb";
 const uploadMaxBytes = isServerless ? 5 * 1024 * 1024 : 12 * 1024 * 1024;
 const apiRateMax = isServerless
@@ -35,7 +35,11 @@ export function createApp() {
 	const app = express();
 	const serverStartedAt = Date.now();
 
-	if (process.env.TRUST_PROXY === "1" || isServerless) {
+	if (
+		process.env.TRUST_PROXY === "1" ||
+		isServerless ||
+		process.env.RENDER === "true"
+	) {
 		app.set("trust proxy", 1);
 	}
 

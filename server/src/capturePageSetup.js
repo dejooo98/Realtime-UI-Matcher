@@ -1,4 +1,5 @@
 import { isFigmaUrl } from "./figmaUrl.js";
+import { isServerlessRuntime } from "./runtimeEnv.js";
 
 /** Recent Chrome UA — helps avoid naive bot blocks (not a guarantee for Figma). */
 const CHROME_USER_AGENT =
@@ -24,6 +25,27 @@ export async function setupCapturePage(page) {
 		Object.defineProperty(navigator, "webdriver", {
 			get: () => undefined,
 		});
+	});
+}
+
+/** Known slow third-party trackers/ads — same-origin URLs are never matched here. */
+const SERVERLESS_BLOCK_URL =
+	/google-analytics\.com|googletagmanager\.com|gtag\/js|g\.doubleclick\.net|pagead2\.googlesyndication|googleads\.g\.doubleclick|googlesyndication|googletagservices|adservice\.google|connect\.facebook\.net|facebook\.com\/tr|pixel\.facebook|graph\.facebook|hotjar\.com|static\.hotjar|clarity\.ms|cdn\.intercom\.io|widget\.intercom|fullstory\.com|segment\.(io|com)|cdn\.segment|api\.segment|sentry\.io|browser\.sentry|ingest\.sentry|optimizely\.com|cdn\.amplitude|amplitude\.com|doubleclick\.net|ads\.linkedin|analytics\.twitter|bat\.bing\.com|cdn\.mxpnl|mixpanel\.com|heap\.io|pendo\.io|hs-scripts\.com|hs-banner\.com|hubspot\.com|hsforms\.net|marketo\.com|pardot\.com|zendesk\.com|embed\.ly|disqus\.com|addthis\.com|sharethis\.com|outbrain\.com|taboola\.com|criteo\.com|adnxs\.com|rubiconproject|scorecardresearch|quantserve\.com|moatads\.com|adsrvr\.org|adsafeprotected|cloudflareinsights|static\.cloudflareinsights|browser-intake|datadoghq\.com|newrelic\.com|nr-data\.net|launchdarkly\.com|cookiebot\.com|onetrust\.com|cookielaw\.org|wp\.com\/stats|pixel\.wp\.com|stats\.wp\.com/i;
+
+/**
+ * Abort heavy third-party tracking requests so `domcontentloaded` fits tight serverless budgets.
+ * Call after {@link setupCapturePage}, before `page.goto`.
+ * @param {import("puppeteer").Page} page
+ */
+export async function setupServerlessRequestBlocking(page) {
+	if (!isServerlessRuntime()) return;
+	await page.setRequestInterception(true);
+	page.on("request", (req) => {
+		const url = req.url();
+		if (SERVERLESS_BLOCK_URL.test(url)) {
+			return req.abort();
+		}
+		return req.continue();
 	});
 }
 

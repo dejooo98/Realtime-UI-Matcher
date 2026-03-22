@@ -1,7 +1,6 @@
 /**
- * Detect Netlify Functions / AWS Lambda. Netlify does not always set NETLIFY or
- * AWS_LAMBDA_FUNCTION_NAME before app code runs; the Netlify entry sets
- * REALTIME_UI_MATCHER_SERVERLESS=1 (see netlify/functions/api.js).
+ * Detect Lambda-style serverless runtimes (NETLIFY, AWS_*, or
+ * REALTIME_UI_MATCHER_SERVERLESS=1 for explicit opt-in).
  */
 export function isServerlessRuntime() {
 	return (

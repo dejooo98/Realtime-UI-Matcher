@@ -12,7 +12,7 @@ export function readFileAsDataUrl(file) {
 }
 
 /**
- * Downscale large PNG uploads so multipart bodies stay under Netlify/Lambda ~6MB limits.
+ * Downscale large PNG uploads so multipart bodies stay under typical host (~6MB) limits.
  * @param {File} file
  * @param {number} [maxDimension]
  * @returns {Promise<File>}

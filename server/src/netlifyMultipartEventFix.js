@@ -1,6 +1,6 @@
 /**
- * Netlify / Lambda may send multipart bodies base64-encoded with a wrong
- * `isBase64Encoded` flag. serverless-http then decodes with utf8 and multer
+ * Lambda-style handlers may send multipart bodies base64-encoded with a wrong
+ * `isBase64Encoded` flag; the API gateway can decode as UTF-8 and multer
  * sees no files → 400. Normalize the flag when the decoded bytes don't contain
  * the multipart boundary but the alternate decoding does.
  */
@@ -25,7 +25,7 @@ function multipartBodyLooksValid(buffer, boundary) {
 }
 
 /**
- * @param {object} event - Lambda / Netlify handler event
+ * @param {object} event - Lambda-style handler event
  */
 export function fixMultipartLambdaEvent(event) {
 	if (!event || typeof event.body !== "string") return event;

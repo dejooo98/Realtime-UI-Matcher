@@ -81,13 +81,13 @@ async function readErrorPayload(res) {
 
 	if (res.status === 502 || res.status === 503) {
 		const hint =
-			"Gateway error from the host (timeout, crash, or response too large). Try smaller images; on Netlify, check Functions logs and plan limits.";
+			"Gateway error from the host or proxy. The backend may be waking from cold start, timing out, crashing, or returning a response that is too large. Try again and check backend logs.";
 		details = details ? `${details} ${hint}` : hint;
 	}
 
 	if (res.status === 504) {
 		const hint =
-			"Gateway timeout — URL capture (Puppeteer) exceeded the host time limit. Netlify starter plans often cap functions around 10s total; upgrade the plan (and set SERVERLESS_NAV_MAX_MS in Netlify env if needed) or run the API locally for slow sites.";
+			"Gateway timeout. URL capture or screenshot processing exceeded the host or proxy time limit. Try again, reduce capture size, or review backend logs.";
 		details = details ? `${details} ${hint}` : hint;
 	}
 

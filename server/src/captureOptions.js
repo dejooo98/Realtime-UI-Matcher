@@ -8,11 +8,10 @@ const WAIT_UNTIL = new Set([
 ]);
 
 /**
- * Max time for page.goto on Netlify/Lambda. A too-low cap causes
- * "Navigation timeout of N ms exceeded" on slow WordPress hosts.
- * Set env SERVERLESS_NAV_MAX_MS (5000–120000) in Netlify → Environment variables
- * to match your function timeout (e.g. 55000 if your plan allows 60s functions).
- * Default 25s helps paid tiers; free tier is still often limited to ~10s total wall time.
+ * Max time for page.goto in serverless mode. A too-low cap causes
+ * "Navigation timeout of N ms exceeded" on slow hosts.
+ * Set SERVERLESS_NAV_MAX_MS (5000–120000) to align with the host’s execution limit.
+ * Default 25s; some providers cap total wall time much lower.
  */
 function serverlessNavMaxMs() {
 	const raw = process.env.SERVERLESS_NAV_MAX_MS;

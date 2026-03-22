@@ -10,6 +10,7 @@ import {
 	resolveDualFigmaTiming,
 	resolveFigmaTiming,
 	setupCapturePage,
+	setupServerlessRequestBlocking,
 } from "./capturePageSetup.js";
 
 /* -------------- Low-level helpers -------------- */
@@ -142,7 +143,7 @@ export function computeDiff(
 	};
 }
 
-/** Netlify/AWS sync functions have ~6MB response bodies; keep PNGs bounded. */
+/** Lambda-style hosts often cap sync response bodies (~6MB); keep PNGs bounded. */
 export const SERVERLESS_PNG_MAX_DIMENSION = 1280;
 
 /**
@@ -228,6 +229,7 @@ export async function screenshotUrl(url, width, options = {}) {
 	const page = await browser.newPage();
 	try {
 		await setupCapturePage(page);
+		await setupServerlessRequestBlocking(page);
 		await page.setViewport({ width, height: 900 });
 		const response = await page.goto(navigateUrl, {
 			waitUntil: effectiveWait,

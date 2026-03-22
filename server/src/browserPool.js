@@ -1,7 +1,7 @@
 /**
  * Browser for Puppeteer captures.
  * - Local dev: full `puppeteer` (bundled Chromium) when installed.
- * - Netlify / AWS Lambda: `puppeteer-core` + `@sparticuz/chromium` (serverless binary).
+ * - Serverless (e.g. Lambda): `puppeteer-core` + `@sparticuz/chromium`.
  */
 import { isServerlessRuntime } from "./runtimeEnv.js";
 

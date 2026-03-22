@@ -1,0 +1,16 @@
+# Single Web Service: Express API + static Vite build (same origin).
+# Free tier services may sleep after idle time; first request can be slow (cold start).
+
+services:
+  - type: web
+    name: realtime-ui-matcher
+    runtime: node
+    plan: free
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_VERSION
+        value: "20"
+      - key: NODE_ENV
+        value: production
