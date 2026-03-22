@@ -48,7 +48,8 @@
 # Longer runs for Puppeteer (requires a Netlify plan that allows >10s if you raise this).
 [functions.api]
   timeout = 60
-  memory = 1024
+  # Slightly more CPU/RAM can shorten Chromium cold start on URL capture
+  memory = 2048
 
 # API + health → Express function (same-origin as the SPA; no separate API host).
 # :splat matches Netlify’s Express guide so the function receives the full /api/… path.
